@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  yt-dlp-webui:
+    build: .
+    container_name: yt-dlp-webui
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5001}:5001"
+    volumes:
+      - ${DOWNLOADS_DIR:-./downloads}:/app/downloads
+      - ${COOKIES_FILE:-./cookies.txt}:/app/cookies.txt:ro
+    environment:
+      - TZ=${TIMEZONE:-Asia/Shanghai}
+    networks:
+      - yt-dlp-network
+
+networks:
+  yt-dlp-network:
+    driver: bridge

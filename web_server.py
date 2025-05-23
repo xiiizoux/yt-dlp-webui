@@ -2,6 +2,16 @@ import os
 import json # Used by app.logger.debug for pretty printing opts
 import logging
 from logging.handlers import RotatingFileHandler
+import sys
+from pathlib import Path
+
+# Try to import dotenv for environment variable support
+try:
+    from dotenv import load_dotenv
+    # Load environment variables from .env file if it exists
+    load_dotenv()
+except ImportError:
+    pass  # dotenv is optional
 
 try:
     from flask import Flask, request, jsonify, send_from_directory
@@ -9,16 +19,19 @@ try:
     from yt_dlp import YoutubeDL
 except ImportError:
     print("Flask and yt-dlp are required. Install them with: pip install Flask yt-dlp")
-    import sys
     sys.exit(1)
 
 # Create Flask app instance
 app = Flask(__name__) # Simplified as static files are served from root.
 
-# Ensure the 'downloads' directory exists
-DOWNLOADS_DIR = os.path.join(os.getcwd(), 'downloads')
+# Get downloads directory from environment variable or use default
+DOWNLOADS_DIR = os.environ.get('DOWNLOADS_DIR', os.path.join(os.getcwd(), 'downloads'))
+# Convert relative path to absolute if needed
+if not os.path.isabs(DOWNLOADS_DIR):
+    DOWNLOADS_DIR = os.path.join(os.getcwd(), DOWNLOADS_DIR)
+# Ensure the downloads directory exists
 if not os.path.exists(DOWNLOADS_DIR):
-    os.makedirs(DOWNLOADS_DIR)
+    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
 @app.route('/')
 def index():
@@ -53,9 +66,12 @@ def get_video_info():
             'socket_timeout': 30,    # Increase timeout
             'nocheckcertificate': True,  # Skip HTTPS certificate validation
             # For YouTube bot detection issues
-            'cookiefile': os.path.join(os.getcwd(), 'cookies.txt') if os.path.exists(os.path.join(os.getcwd(), 'cookies.txt')) else None,
+            # Get cookies file path from environment variable or use default
+            'cookiefile': os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'cookies.txt')) 
+                if os.path.exists(os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'cookies.txt'))) else None,
             # Alternatively, use browser cookies if available
-            'cookiesfrombrowser': ('chrome',) if not os.path.exists(os.path.join(os.getcwd(), 'cookies.txt')) else None,
+            'cookiesfrombrowser': ('chrome',) 
+                if not os.path.exists(os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'cookies.txt'))) else None,
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -314,13 +330,19 @@ def download_video():
                 app.logger.error(f"Error deleting temporary file {filename_on_server}: {str(e_remove)}")
 
 if __name__ == '__main__':
-    # Use port 5001 to avoid conflicts with AirPlay on macOS
-    port = 5001
+    # Get port from environment variable or use default 5001 (to avoid conflicts with AirPlay on macOS)
+    port = int(os.environ.get('PORT', 5001))
+    
+    # Get debug mode from environment variable or default to True
+    debug_mode = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
+    
     print(f"Serving on http://127.0.0.1:{port}")
     print(f"Video downloads will be saved to: {DOWNLOADS_DIR}")
+    
     # Set up basic logging for the app
+    log_file = os.environ.get('LOG_FILE', 'web_server.log')
     if not app.debug:
-        file_handler = RotatingFileHandler('web_server.log', maxBytes=10240, backupCount=10)
+        file_handler = RotatingFileHandler(log_file, maxBytes=10240, backupCount=10)
         file_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
         ))
@@ -329,4 +351,4 @@ if __name__ == '__main__':
         app.logger.setLevel(logging.INFO)
         app.logger.info('yt-dlp Web UI startup')
 
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)

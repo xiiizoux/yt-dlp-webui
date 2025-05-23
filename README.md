@@ -76,15 +76,77 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
 
 ## Running the Application
 
+### Method 1: Running Locally
+
 1.  **Start the Flask server**:
     ```bash
     python web_server.py
     ```
 
 2.  **Access the Web UI**:
-    Open your web browser and go to: `http://127.0.0.1:5000`
+    Open your web browser and go to: `http://127.0.0.1:5001`
 
     **Note on Downloads**: When you download a file, it is first downloaded to a temporary `downloads` directory on the server. The file is then streamed to your browser. After the stream is complete (or if an error occurs), the file is automatically deleted from the server's `downloads` directory.
+
+### Method 2: Using Docker
+
+This project includes Docker support for easy deployment and isolation.
+
+#### Prerequisites
+
+- Docker and Docker Compose installed on your system
+
+#### Configuration
+
+The application can be configured using environment variables in the `.env` file:
+
+```
+# Port configuration
+PORT=5001
+
+# Downloads directory path (relative or absolute)
+DOWNLOADS_DIR=./downloads
+
+# Path to cookies.txt file (relative or absolute)
+COOKIES_FILE=./cookies.txt
+
+# Timezone setting
+TIMEZONE=Asia/Shanghai
+
+# Debug mode (True or False)
+DEBUG=True
+
+# Log file location
+LOG_FILE=web_server.log
+```
+
+#### Building and Running with Docker Compose
+
+1. **Build and start the container**:
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Access the Web UI**:
+   Open your web browser and go to: `http://localhost:5001`
+
+3. **View logs**:
+   ```bash
+   docker-compose logs -f
+   ```
+
+4. **Stop the container**:
+   ```bash
+   docker-compose down
+   ```
+
+#### Using Cookies with Docker
+
+To use cookies with Docker for YouTube authentication:
+
+1. Create a `cookies.txt` file in the project directory
+2. Docker Compose will automatically mount this file into the container
+3. If you change the location of your cookies file, update the `COOKIES_FILE` variable in your `.env` file
 
 ## How to Use
 

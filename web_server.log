@@ -17,3 +17,7 @@
 2025-05-23 10:46:13,819 ERROR: DownloadError for URL https://www.youtube.com/watch?v=nZCVhG3vQps: ERROR: [youtube] nZCVhG3vQps: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:150]
 2025-05-23 10:47:17,295 INFO: Fetching video info for URL: https://x.com/igeekbb/status/1925495620191887365 [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:45]
 2025-05-23 10:48:28,488 INFO: Fetching video info for URL: https://www.bilibili.com/video/BV1uyLDzJE1f/?vd_source=a63986ee7b23c7bc154415685137f3e5 [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:45]
+2025-05-23 11:00:54,452 INFO: yt-dlp Web UI startup [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:339]
+2025-05-23 11:01:06,904 INFO: yt-dlp Web UI startup [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:343]
+2025-05-23 11:01:24,329 INFO: yt-dlp Web UI startup [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:346]
+2025-05-23 11:01:42,790 INFO: yt-dlp Web UI startup [in /Users/zouguojun/Workspace/yt-dlp-webui/web_server.py:352]
