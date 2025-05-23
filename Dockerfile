@@ -1,12 +1,9 @@
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
 WORKDIR /app
 
 # Install ffmpeg and other necessary dependencies
-RUN apt-get update && \
-    apt-get install -y ffmpeg gcc python3-dev curl wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ffmpeg gcc musl-dev python3-dev curl wget bash
 
 # 安装最新版本的 yt-dlp 以确保更好的兼容性
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
