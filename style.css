@@ -28,7 +28,7 @@ h1 {
 .input-section {
     display: flex;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 20px; /* Adjusted margin */
 }
 
 #videoUrl {
@@ -37,7 +37,7 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
-    box-sizing: border-box; /* Ensures padding doesn't affect width */
+    box-sizing: border-box;
 }
 
 #fetchButton {
@@ -55,51 +55,207 @@ h1 {
     background-color: #2980b9;
 }
 
-.video-info-section {
-    margin-top: 20px;
+/* Screen-reader only utility class */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
 }
 
-.video-info-section h2 {
+
+/* === Options Section === */
+.options-section {
+    background-color: #f9f9f9;
+    padding: 15px 20px 5px 20px; /* Adjusted padding */
+    border-radius: 6px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0; /* Subtle border */
+}
+
+.options-section legend { /* Style the legend directly */
+    font-size: 1.2em; /* Corresponds to h3 a bit */
+    font-weight: bold;
     color: #34495e;
-    margin-bottom: 15px;
+    padding: 0 5px; /* Give some spacing around the legend text */
+    margin-bottom: 10px; /* Space below legend */
 }
 
-.format-item {
-    background-color: #ecf0f1;
-    padding: 15px;
-    margin-bottom: 10px;
+.options-section div { /* Applies to checkbox/label containers */
+    margin-bottom: 15px; /* Increased spacing between option rows */
+}
+
+.options-section label {
+    margin-left: 5px;
+    color: #333;
+    font-size: 0.95em;
+}
+
+.options-section input[type="checkbox"] {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.options-section select {
+    padding: 8px 10px;
     border-radius: 4px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #ccc;
+    font-size: 0.9em;
+    min-width: 150px; /* Give select some base width */
 }
 
-.format-item span {
-    font-size: 14px;
+#audioFormatContainer label, 
+#videoQuality label { /* Labels for select dropdowns */
+    margin-right: 8px;
+    font-weight: 500; /* Make them slightly bolder */
+}
+
+
+/* === Loading, Feedback, and Error Messages === */
+#loadingIndicator {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1em; /* Slightly larger */
     color: #555;
 }
 
+#downloadFeedback {
+    text-align: center;
+    padding: 12px; /* Adjusted padding */
+    margin-top: 20px; /* Increased margin */
+    background-color: #e6fffa;
+    color: #007a5e;
+    border: 1px solid #b2f0e1;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.error-message {
+    color: #b94a48; /* Darker red for better contrast */
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 10px; /* Ensure it has some space if it's the only content in videoDescriptionEl */
+    text-align: left; 
+}
+
+
+/* === Video Information Section === */
+.video-info-section { /* This is <article id="videoInfo"> */
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0; /* Consistent border */
+}
+
+#videoTitle { /* This is <h2 id="videoTitle"> */
+    color: #34495e;
+    margin-top: 0; /* Remove top margin if it's the first child */
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.5em; /* Ensure it's prominent */
+}
+
+#videoThumbnail {
+    display: block; 
+    max-width: 100%;
+    height: auto;
+    margin: 15px auto 20px auto; /* Adjusted margins */
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.video-info-section p { /* Paragraphs holding Uploader, Duration */
+    margin-bottom: 10px; /* Slightly more spacing */
+    line-height: 1.6;
+}
+
+.video-description { /* This is <div id="videoDescription"> */
+    margin-top: 10px; /* Space from "Description:" paragraph */
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    max-height: 150px; 
+    overflow-y: auto; 
+    margin-bottom: 20px;
+    line-height: 1.5;
+    font-size: 0.95em;
+    color: #495057;
+}
+
+.video-info-section h3 { /* "Available Formats:" heading */
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #34495e;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px; /* Increased padding */
+    font-size: 1.3em; /* Make it a bit larger */
+}
+
+
+/* === Formats List === */
+#formatsList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.format-item { /* Each <li> for a format */
+    background-color: #ecf0f1;
+    padding: 15px;
+    margin-bottom: 12px; /* Slightly increased margin */
+    border-radius: 5px; /* Slightly more rounded */
+    display: flex;
+    flex-direction: column; /* Stack details and button vertically */
+    gap: 10px; /* Space between details and button */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.format-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.format-details { /* Class for the div containing format information */
+    font-size: 0.9em; /* Slightly smaller font for details */
+    color: #333;
+    line-height: 1.5;
+}
+
+.format-details strong {
+    color: #2c3e50;
+}
+
 .format-item .download-button {
-    padding: 8px 15px;
+    padding: 10px 15px; /* Adjusted padding */
     background-color: #2ecc71;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
-    text-decoration: none; /* Remove underline from links styled as buttons */
+    font-size: 15px; /* Adjusted font size */
+    text-decoration: none;
     transition: background-color 0.3s ease;
+    align-self: flex-start; 
 }
 
 .format-item .download-button:hover {
     background-color: #27ae60;
 }
 
-/* Responsive adjustments */
+
+/* === Responsive Adjustments === */
 @media (max-width: 600px) {
     .container {
-        margin: 20px;
+        margin: 15px; /* Slightly reduce margin for very small screens */
         padding: 20px;
     }
 
