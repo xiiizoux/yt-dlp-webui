@@ -1,5 +1,7 @@
 # yt-dlp Web UI
 
+A simple web interface for [yt-dlp](https://github.com/yt-dlp/yt-dlp), a powerful YouTube-DL fork with additional features and fixes.
+
 ## Description
 
 This project provides a web-based user interface for the powerful `yt-dlp` command-line video downloader. Its purpose is to offer a more user-friendly way to interact with some of `yt-dlp`'s most common features without needing to use the command line directly.
@@ -94,6 +96,25 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
 6.  Find your desired format in the list and click the "Download (Direct)" or "Download (via Server)" button next to it.
     - "Download (Direct)" links attempt to use the direct URL from the content provider if no server-side processing (like audio extraction or subtitle embedding) is needed.
     - "Download (via Server)" will process the download through the backend, applying any selected options.
+
+## Handling YouTube Bot Detection
+
+YouTube sometimes requires verification that you're not a bot. When this happens, you'll see an error message like "Sign in to confirm you're not a bot". To resolve this issue:
+
+### Option 1: Use a cookies.txt file
+
+1. Create a `cookies.txt` file in the root directory of the application (same folder as `web_server.py`).
+2. Add your YouTube cookies to this file. You can use browser extensions like [Get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid) for Chrome or [Cookie Quick Manager](https://addons.mozilla.org/en-US/firefox/addon/cookie-quick-manager/) for Firefox.
+3. Make sure you're logged into YouTube in your browser before exporting the cookies.
+
+### Option 2: Use browser cookies automatically
+
+The application will attempt to use cookies from your Chrome browser if a `cookies.txt` file is not found. This requires:
+
+1. Being logged into YouTube in Chrome
+2. Running the application on the same machine where Chrome is installed
+
+For more detailed information, see the [yt-dlp FAQ on cookies](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp).
 
 ## Disclaimer
 

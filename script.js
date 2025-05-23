@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Function to display error messages
-    function displayError(message) {
+    function displayError(message, details) {
         elements.loadingIndicator.style.display = 'none';
         elements.videoInfoDiv.style.display = 'block'; // Show the info section to display the error
         
@@ -44,7 +44,28 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.formatsListEl.innerHTML = ''; // Clear formats list
         
         // Display error message in description area, styled
-        elements.videoDescriptionEl.innerHTML = `<p class="error-message">${message}</p>`;
+        let errorHtml = `<p class="error-message">${message}</p>`;
+        
+        // Add details if provided (like for YouTube bot detection)
+        if (details) {
+            errorHtml += `<p class="error-details">${details}</p>`;
+        }
+        
+        // Add special message for YouTube bot detection
+        if (message.includes('YouTube bot detection') || message.includes('Sign in to confirm you\'re not a bot')) {
+            errorHtml += `
+            <div class="bot-detection-help">
+                <h4>How to fix this issue:</h4>
+                <ol>
+                    <li>Create a cookies.txt file in the application folder</li>
+                    <li>Add your YouTube cookies to this file (use a browser extension like "Get cookies.txt")</li>
+                    <li>Restart the application</li>
+                </ol>
+                <p>For more information, see the README file.</p>
+            </div>`;
+        }
+        
+        elements.videoDescriptionEl.innerHTML = errorHtml;
     }
 
     elements.fetchButton.addEventListener('click', async () => {
@@ -90,13 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!response.ok) {
                 let errorMsg = `HTTP error! status: ${response.status}`;
+                let errorDetails = null;
                 try {
                     const errorData = await response.json();
                     errorMsg = errorData.error || errorMsg;
+                    errorDetails = errorData.details || null;
                 } catch (e) {
                     // Could not parse JSON error, stick with HTTP status
                 }
-                throw new Error(errorMsg);
+                throw new Error(errorMsg, { cause: errorDetails });
             }
 
             const data = await response.json();
@@ -123,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Fetch error:', error);
-            displayError(`Failed to fetch video information: ${error.message}`);
+            displayError(`Failed to fetch video information: ${error.message}`, error.cause);
         }
     });
 

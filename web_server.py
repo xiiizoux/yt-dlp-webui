@@ -1,17 +1,18 @@
 import os
 import json # Used by app.logger.debug for pretty printing opts
-from flask import Flask, request, jsonify, send_from_directory
-from yt_dlp import YoutubeDL
+import logging
+from logging.handlers import RotatingFileHandler
 
-app = Flask(__name__, static_folder='web') # 'web' is not used as static_folder, files are at root.
-                                         # However, this doesn't break anything for the current setup.
-                                         # For correctness if actual static files were in /web, it would be:
-                                         # app = Flask(__name__, static_folder='static')
-                                         # and ensure an actual 'static' folder exists.
-                                         # Given current structure, static_folder isn't strictly necessary
-                                         # as Flask serves index.html from root by default if no static_folder is hit.
-                                         # For clarity, could be app = Flask(__name__) if no distinct static folder.
-                                         # Let's assume the intent was to serve from root, so Flask's default is fine.
+try:
+    from flask import Flask, request, jsonify, send_from_directory
+    import yt_dlp
+    from yt_dlp import YoutubeDL
+except ImportError:
+    print("Flask and yt-dlp are required. Install them with: pip install Flask yt-dlp")
+    import sys
+    sys.exit(1)
+
+# Create Flask app instance
 app = Flask(__name__) # Simplified as static files are served from root.
 
 # Ensure the 'downloads' directory exists
@@ -48,8 +49,13 @@ def get_video_info():
             'noplaylist': True, # Ensure we don't process playlists
             'quiet': True,
             'no_warnings': True,
-            # 'skip_download': True, # We are only fetching info
-            # 'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best', # Removed for comprehensive format listing
+            'extractor_retries': 3,  # Retry extraction
+            'socket_timeout': 30,    # Increase timeout
+            'nocheckcertificate': True,  # Skip HTTPS certificate validation
+            # For YouTube bot detection issues
+            'cookiefile': os.path.join(os.getcwd(), 'cookies.txt') if os.path.exists(os.path.join(os.getcwd(), 'cookies.txt')) else None,
+            # Alternatively, use browser cookies if available
+            'cookiesfrombrowser': ('chrome',) if not os.path.exists(os.path.join(os.getcwd(), 'cookies.txt')) else None,
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -123,6 +129,23 @@ def get_video_info():
             user_message = "This video is geo-restricted and not available in your region."
         elif "unable to extract video data" in error_message_lower: # Common yt-dlp error
             user_message = "Could not extract video data. The video might be private, deleted, or the URL is incorrect."
+        
+        # Check for specific YouTube errors
+        error_str = str(e_dl)
+        
+        # YouTube bot detection
+        if "Sign in to confirm you're not a bot" in error_str:
+            return jsonify({
+                'error': "YouTube bot detection triggered. Please create a cookies.txt file with your YouTube cookies.",
+                'details': "See https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp for instructions."
+            }), 403
+            
+        # Failed to extract player response error
+        if "Failed to extract any player response" in error_str:
+            return jsonify({
+                'error': "YouTube extraction failed. This may be due to YouTube API changes.",
+                'details': "Try using a different video URL or check if the video is available in your region. You can also try creating a cookies.txt file with your YouTube cookies."
+            }), 500
         
         app.logger.error(f"DownloadError for URL {url}: {str(e_dl)}")
         return jsonify({'error': user_message}), 500
@@ -268,8 +291,17 @@ def download_video():
             )
 
     except yt_dlp.utils.DownloadError as e_outer_dl: # Errors before or during ydl context
-        app.logger.error(f"Outer DownloadError for {url}: {str(e_outer_dl)}")
-        return jsonify({'error': f"A download error occurred: {str(e_outer_dl)}"}), 500
+        error_message = str(e_outer_dl)
+        app.logger.error(f"Outer DownloadError for {url}: {error_message}")
+        
+        # Check for YouTube bot detection
+        if "Sign in to confirm you're not a bot" in error_message:
+            return jsonify({
+                'error': "YouTube bot detection triggered. Please create a cookies.txt file with your YouTube cookies.",
+                'details': "See https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp for instructions."
+            }), 403
+            
+        return jsonify({'error': f"A download error occurred: {error_message}"}), 500
     except Exception as e_general_outer:
         app.logger.error(f"Outer general error for {url}: {str(e_general_outer)}")
         return jsonify({'error': f"An unexpected server error occurred during download preparation."}), 500
@@ -282,16 +314,12 @@ def download_video():
                 app.logger.error(f"Error deleting temporary file {filename_on_server}: {str(e_remove)}")
 
 if __name__ == '__main__':
-    # Before running the app, ensure Flask is installed.
-    # You can typically install it using pip:
-    # pip install Flask yt-dlp
-    print("Flask and yt-dlp are required. Install them with: pip install Flask yt-dlp")
-    print(f"Serving on http://127.0.0.1:5000")
+    # Use port 5001 to avoid conflicts with AirPlay on macOS
+    port = 5001
+    print(f"Serving on http://127.0.0.1:{port}")
     print(f"Video downloads will be saved to: {DOWNLOADS_DIR}")
     # Set up basic logging for the app
     if not app.debug:
-        import logging
-        from logging.handlers import RotatingFileHandler
         file_handler = RotatingFileHandler('web_server.log', maxBytes=10240, backupCount=10)
         file_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
@@ -301,4 +329,4 @@ if __name__ == '__main__':
         app.logger.setLevel(logging.INFO)
         app.logger.info('yt-dlp Web UI startup')
 
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)
