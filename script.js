@@ -268,9 +268,25 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.image-formats p').textContent = translations[lang].extractThumbnail;
         document.querySelector('.download-thumbnail-button').textContent = translations[lang].downloadThumbnail;
         
-        // 更新页脚
-        document.getElementById('footer-copyright').innerHTML = translations[lang].footerCopyright;
-        document.getElementById('disclaimer').textContent = translations[lang].disclaimer;
+        // 更新页脚 - 完全重写页脚内容
+        const footerContainer = document.getElementById('footer-container');
+        // 清空容器
+        footerContainer.innerHTML = '';
+        
+        // 创建版权信息元素
+        const copyrightP = document.createElement('p');
+        copyrightP.id = 'footer-copyright';
+        copyrightP.innerHTML = translations[lang].footerCopyright;
+        
+        // 创建免责声明元素
+        const disclaimerP = document.createElement('p');
+        disclaimerP.id = 'disclaimer';
+        disclaimerP.className = 'disclaimer';
+        disclaimerP.textContent = translations[lang].disclaimer;
+        
+        // 将元素添加到容器中
+        footerContainer.appendChild(copyrightP);
+        footerContainer.appendChild(disclaimerP);
     }
     // DOM Element References
     const elements = {
