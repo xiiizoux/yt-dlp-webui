@@ -32,8 +32,9 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
 
 ### Project Files for Dependency Management
 
--   **`pyproject.toml`**: This file defines the project metadata and its direct dependencies (e.g., Flask, yt-dlp).
--   **`uv.lock`**: This is an auto-generated lock file that pins the exact versions of all dependencies (direct and indirect) to ensure consistent and reproducible environments. It should be committed to the repository.
+-   **`pyproject.toml`**: Lists the project's direct, high-level dependencies.
+-   **`uv.lock`**: An auto-generated lock file that captures the full, resolved dependency tree from `pyproject.toml`, ensuring version consistency.
+-   **`requirements.txt`**: An auto-generated file derived from `uv.lock` that explicitly lists all direct and transitive dependencies. This file is used by `uv pip sync requirements.txt` for reliable environment setup.
 
 ### Installation Steps
 
@@ -64,12 +65,12 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
     Choose **one** of the above methods to create and activate your virtual environment. The `uv` method is preferred for consistency with the project's dependency management.
 
 3.  **Install dependencies**:
-    Dependencies are defined in `pyproject.toml` and locked in `uv.lock`.
+    The full list of dependencies, including all sub-dependencies, is provided in `requirements.txt`. This file is generated from `uv.lock` to ensure consistent, reproducible environments.
     With your virtual environment activated, install them using `uv`:
     ```bash
-    uv pip sync pyproject.toml
+    uv pip sync requirements.txt
     ```
-    This command installs the exact versions specified in `uv.lock` by synchronizing your environment with the `pyproject.toml` file, automatically using the associated lock file.
+    This command installs the exact versions specified in `requirements.txt`.
 
 ## Running the Application
 
