@@ -26,9 +26,14 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
 ### Prerequisites
 
 -   **Python 3.x**: Ensure Python 3 (version 3.7 or newer recommended) is installed.
--   **`pip`**: The Python package installer, usually included with Python.
--   **`ffmpeg`**: `yt-dlp` requires `ffmpeg` for many operations, especially for merging separate video and audio streams (common for high-quality formats) or for converting audio formats.
+-   **`uv`**: This project uses `uv` for fast environment and package management. Install `uv` by following the [official instructions](https://github.com/astral-sh/uv) (e.g., `pip install uv` or using their recommended installers).
+-   **`ffmpeg`**: `yt-dlp` requires `ffmpeg` for many operations, especially for merging separate video and audio streams or for converting audio formats.
     -   Download `ffmpeg` from [ffmpeg.org](https://ffmpeg.org/download.html) or use pre-built static versions from [yt-dlp/FFmpeg-Builds](https://github.com/yt-dlp/FFmpeg-Builds). Ensure `ffmpeg` (and `ffprobe`) is in your system's PATH or accessible by `yt-dlp`.
+
+### Project Files for Dependency Management
+
+-   **`pyproject.toml`**: This file defines the project metadata and its direct dependencies (e.g., Flask, yt-dlp).
+-   **`uv.lock`**: This is an auto-generated lock file that pins the exact versions of all dependencies (direct and indirect) to ensure consistent and reproducible environments. It should be committed to the repository.
 
 ### Installation Steps
 
@@ -38,42 +43,30 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
     cd yt-dlp-webui
     ```
 
-2.  **Create and activate a virtual environment** (highly recommended):
+2.  **Create and activate a virtual environment**:
 
-    **Option 1: Using Python's built-in `venv` module**
-    ```bash
-    python -m venv venv 
-    ```
-    -   On macOS and Linux:
+    *   **Using `uv` (recommended for this project):**
         ```bash
-        source venv/bin/activate
+        uv venv
         ```
-    -   On Windows:
-        ```bash
-        venv\Scripts\activate
-        ```
+        Then activate it:
+        -   On macOS and Linux: `source .venv/bin/activate`
+        -   On Windows: `.venv\Scripts\activate`
 
-    **Option 2: Using `uv` (if installed)**
-    
-    First, ensure `uv` is installed. If not, you can install it by following the instructions at [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv).
-    
-    ```bash
-    uv venv
-    ```
-    -   On macOS and Linux:
+    *   **Alternatively, using Python's built-in `venv` module:**
         ```bash
-        source .venv/bin/activate
+        python -m venv venv 
         ```
-    -   On Windows:
-        ```bash
-        .venv\Scripts\activate
-        ```
+        Then activate it:
+        -   On macOS and Linux: `source venv/bin/activate`
+        -   On Windows: `venv\Scripts\activate`
     
-    Choose **one** of the above methods to create and activate your virtual environment.
+    Choose **one** of the above methods to create and activate your virtual environment. The `uv` method is preferred for consistency with the project's dependency management.
 
 3.  **Install dependencies**:
+    With your virtual environment activated, install the dependencies using `uv`. This command installs the exact versions specified in `uv.lock`, ensuring a reproducible environment.
     ```bash
-    pip install Flask yt-dlp
+    uv pip sync
     ```
 
 ## Running the Application
