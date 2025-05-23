@@ -1,6 +1,8 @@
 services:
   yt-dlp-webui:
-    image: xiiizoux/yt-dlp-webui:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: yt-dlp-webui
     restart: unless-stopped
     ports:
