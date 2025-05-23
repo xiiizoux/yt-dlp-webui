@@ -34,9 +34,8 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
 
 1.  **Clone the repository** (or download and extract the source code):
     ```bash
-    # Replace <repository_url> with the actual URL of this project
-    git clone <repository_url>
-    cd <repository_directory_name> 
+    git clone https://github.com/xiiizoux/yt-dlp-webui.git
+    cd yt-dlp-webui
     ```
 
 2.  **Create and activate a virtual environment** (highly recommended):
