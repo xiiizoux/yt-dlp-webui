@@ -105,6 +105,8 @@ This project includes Docker support for easy deployment and isolation.
 
 #### Configuration
 
+##### Environment Variables
+
 The application can be configured using environment variables. A template file `.env_example` is provided. To use it:
 
 1. Copy `.env_example` to `.env`:
@@ -115,6 +117,20 @@ The application can be configured using environment variables. A template file `
 2. Edit the `.env` file to customize your settings:
    ```bash
    nano .env  # or use any text editor
+   ```
+
+##### Docker Compose Configuration
+
+A template file `docker-compose.yml.example` is also provided for Docker Compose configuration. To use it:
+
+1. Copy `docker-compose.yml.example` to `docker-compose.yml`:
+   ```bash
+   cp docker-compose.yml.example docker-compose.yml
+   ```
+
+2. Edit the `docker-compose.yml` file if you need to customize Docker settings:
+   ```bash
+   nano docker-compose.yml  # or use any text editor
    ```
 
 Available configuration options:
