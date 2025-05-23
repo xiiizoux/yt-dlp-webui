@@ -7,16 +7,61 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <main class="container">
         <h1>yt-dlp Web UI</h1>
-        <div class="input-section">
-            <input type="text" id="videoUrl" placeholder="Enter video URL">
-            <button id="fetchButton">Fetch Formats</button>
+        <form class="input-section" onsubmit="return false;"> <!-- Prevent default form submission -->
+            <label for="videoUrl" class="sr-only">Video URL</label> <!-- Screen-reader only label -->
+            <input type="text" id="videoUrl" placeholder="Enter video URL" aria-label="Video URL">
+            <button type="button" id="fetchButton">Fetch Formats</button> <!-- type="button" to prevent form submission -->
+        </form>
+
+        <fieldset class="options-section">
+            <legend><h3>Download Options:</h3></legend>
+            <div>
+                <input type="checkbox" id="audioOnly" name="audioOnly">
+                <label for="audioOnly">Download audio only</label>
+            </div>
+            <div id="audioFormatContainer" style="display: none; margin-top: 5px; margin-left: 20px;">
+                <label for="audioFormat">Audio Format:</label>
+                <select id="audioFormat" name="audioFormat">
+                    <option value="best">Best</option>
+                    <option value="mp3">MP3</option>
+                    <option value="m4a">M4A</option>
+                    <option value="opus">Opus</option>
+                    <option value="wav">WAV</option>
+                </select>
+            </div>
+            <div style="margin-top: 10px;">
+                <label for="videoQuality">Video Quality:</label>
+                <select id="videoQuality" name="videoQuality">
+                    <option value="best">Best</option>
+                    <option value="1080">1080p</option>
+                    <option value="720">720p</option>
+                    <option value="480">480p</option>
+                    <option value="360">360p</option>
+                </select>
+            </div>
+            <div style="margin-top: 10px;">
+                <input type="checkbox" id="embedSubs" name="embedSubs">
+                <label for="embedSubs">Embed subtitles (if available, English)</label>
+            </div>
         </div>
-        <div id="videoInfo" class="video-info-section">
-            <!-- Video formats will be displayed here -->
-        </div>
-    </div>
+
+        <div id="loadingIndicator" style="display: none; text-align: center; padding: 20px;">Loading...</div>
+        <article id="videoInfo" class="video-info-section" style="display: none;" aria-live="polite">
+            <h2 id="videoTitle"></h2>
+            <img id="videoThumbnail" src="" alt="Video thumbnail" style="display: none; max-width: 100%; height: auto; margin: 10px auto; border-radius: 4px;">
+            <p><strong>Uploader:</strong> <span id="videoUploader"></span></p>
+            <p><strong>Duration:</strong> <span id="videoDuration"></span></p>
+            <p><strong>Description:</strong></p>
+            <div id="videoDescription" class="video-description"></div>
+            <h3>Available Formats:</h3>
+            <ul id="formatsList" aria-label="List of available video formats">
+                <!-- Video formats will be displayed here -->
+            </ul>
+        </article>
+        <div id="downloadFeedback" style="display: none;" role="status" aria-live="polite"></div>
+    </main>
     <script src="script.js"></script>
 </body>
 </html>
