@@ -115,82 +115,100 @@ def get_video_info():
 
     app.logger.info(f"Fetching video info for URL: {url}")
     try:
-        # ydl_opts for fetching information without downloading
-        ydl_opts = {
-            'noplaylist': True, # Ensure we don't process playlists
-            'quiet': True,
-            'no_warnings': True,
-            'extractor_retries': 3,  # Retry extraction
-            'socket_timeout': 30,    # Increase timeout
-            'nocheckcertificate': True,  # Skip HTTPS certificate validation
-            # Disable cookies file usage to avoid issues
-            'cookiefile': None,
-            'cookiesfrombrowser': None,
-            # Add more options to handle SSL issues
-            'nocheckcertificate': True,
-            'no_check_certificate': True,
-            'prefer_insecure': True,
-            'http_headers': {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            },
-        }
-        with YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-            formats = []
-            if 'formats' in info:
-                for f in info['formats']:
-                    # Be more inclusive with formats
-                    formats.append({
-                        'format_id': f.get('format_id'),
-                        'ext': f.get('ext'),
-                        'resolution': f"{f.get('width')}x{f.get('height')}" if f.get('width') and f.get('height') else f.get('resolution'),
-                        'format_note': f.get('format_note'),
-                        'filesize': f.get('filesize'),
-                        'filesize_approx': f.get('filesize_approx'),
-                        'fps': f.get('fps'),
-                        'vcodec': f.get('vcodec'),
-                        'acodec': f.get('acodec'),
-                        'tbr': f.get('tbr'),
-                        'abr': f.get('abr'),
-                        'vbr': f.get('vbr'),
-                        'url': f.get('url'),
-                        'manifest_url': f.get('manifest_url'),
-                        'protocol': f.get('protocol'),
-                        'language': f.get('language'),
-                    })
-            # Fallback if no 'formats' array, but top-level URL exists (e.g., direct image URL)
-            elif 'url' in info: # This case might be rare for typical video URLs yt-dlp processes
-                app.logger.info(f"No 'formats' array, using top-level info for URL: {url}")
+        # 获取cookies文件路径
+        cookies_file = os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'config', 'cookies.txt'))
+        
+        # 检查cookies文件是否存在
+        if os.path.exists(cookies_file):
+            app.logger.info(f"Using cookies file for video info: {cookies_file} (size: {os.path.getsize(cookies_file)} bytes)")
+        else:
+            app.logger.warning(f"Cookies file not found for video info: {cookies_file}")
+        
+        # 使用subprocess调用yt-dlp命令行工具来获取视频信息
+        import subprocess
+        import json
+        
+        # 构建yt-dlp命令
+        cmd = [
+            'yt-dlp',
+            '--cookies', cookies_file,
+            '--dump-json',
+            '--no-playlist',
+            '--no-warnings',
+            '--no-check-certificate',
+            url
+        ]
+        
+        app.logger.info(f"Running command: {' '.join(cmd)}")
+        
+        # 运行命令并获取输出
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        
+        if process.returncode != 0:
+            error_message = stderr.decode('utf-8', errors='replace')
+            app.logger.error(f"yt-dlp command failed: {error_message}")
+            raise Exception(f"Failed to extract video info: {error_message}")
+        
+        # 解析JSON输出
+        info = json.loads(stdout.decode('utf-8', errors='replace'))
+        
+        # 下面的代码与YoutubeDL API版本相同
+        formats = []
+        if 'formats' in info:
+            for f in info['formats']:
+                # Be more inclusive with formats
                 formats.append({
-                    'format_id': info.get('format_id', 'source'), # Use 'source' or 'direct' if no specific id
-                    'ext': info.get('ext', 'unknown'),
-                    'resolution': f"{info.get('width')}x{info.get('height')}" if info.get('width') and info.get('height') else info.get('resolution', 'N/A'),
-                    'format_note': info.get('format_note', 'Direct Source'),
-                    'filesize': info.get('filesize'), # Might be None
-                    'filesize_approx': info.get('filesize_approx'),
-                    'fps': info.get('fps'),
-                    'vcodec': info.get('vcodec', 'N/A'),
-                    'acodec': info.get('acodec', 'N/A'),
-                    'tbr': info.get('tbr'),
-                    'abr': info.get('abr'),
-                    'vbr': info.get('vbr'),
-                    'url': info.get('url'),
-                    'manifest_url': info.get('manifest_url'),
-                    'protocol': info.get('protocol'),
-                    'language': info.get('language'),
+                    'format_id': f.get('format_id'),
+                    'ext': f.get('ext'),
+                    'resolution': f"{f.get('width')}x{f.get('height')}" if f.get('width') and f.get('height') else f.get('resolution'),
+                    'format_note': f.get('format_note'),
+                    'filesize': f.get('filesize'),
+                    'filesize_approx': f.get('filesize_approx'),
+                    'fps': f.get('fps'),
+                    'vcodec': f.get('vcodec'),
+                    'acodec': f.get('acodec'),
+                    'tbr': f.get('tbr'),
+                    'abr': f.get('abr'),
+                    'vbr': f.get('vbr'),
+                    'url': f.get('url'),
+                    'manifest_url': f.get('manifest_url'),
+                    'protocol': f.get('protocol'),
+                    'language': f.get('language'),
                 })
-
-            return jsonify({
-                'title': info.get('title'),
-                'uploader': info.get('uploader'),
-                'duration': info.get('duration'),
-                'duration_string': info.get('duration_string'),
-                'thumbnail': info.get('thumbnail'),
-                'description': info.get('description'),
-                'webpage_url': info.get('webpage_url'),
-                'formats': formats,
-                'original_url': url # Echo back the requested URL for reference
+        # Fallback if no 'formats' array, but top-level URL exists (e.g., direct image URL)
+        elif 'url' in info: # This case might be rare for typical video URLs yt-dlp processes
+            app.logger.info(f"No 'formats' array, using top-level info for URL: {url}")
+            formats.append({
+                'format_id': info.get('format_id', 'source'), # Use 'source' or 'direct' if no specific id
+                'ext': info.get('ext', 'unknown'),
+                'resolution': f"{info.get('width')}x{info.get('height')}" if info.get('width') and info.get('height') else info.get('resolution', 'N/A'),
+                'format_note': info.get('format_note', 'Direct Source'),
+                'filesize': info.get('filesize'), # Might be None
+                'filesize_approx': info.get('filesize_approx'),
+                'fps': info.get('fps'),
+                'vcodec': info.get('vcodec', 'N/A'),
+                'acodec': info.get('acodec', 'N/A'),
+                'tbr': info.get('tbr'),
+                'abr': info.get('abr'),
+                'vbr': info.get('vbr'),
+                'url': info.get('url'),
+                'manifest_url': info.get('manifest_url'),
+                'protocol': info.get('protocol'),
+                'language': info.get('language'),
             })
+
+        return jsonify({
+            'title': info.get('title'),
+            'uploader': info.get('uploader'),
+            'duration': info.get('duration'),
+            'duration_string': info.get('duration_string'),
+            'thumbnail': info.get('thumbnail'),
+            'description': info.get('description'),
+            'webpage_url': info.get('webpage_url'),
+            'formats': formats,
+            'original_url': url # Echo back the requested URL for reference
+        })
     except yt_dlp.utils.DownloadError as e_dl:
         error_message_lower = str(e_dl).lower()
         user_message = f"Failed to fetch video information: {str(e_dl)}" # Default detailed message
@@ -353,6 +371,15 @@ def download_video_task(download_id, url, format_id, audio_only, audio_format_pr
         def hook_wrapper(d):
             progress_hook(d, download_id)
             
+        # 获取cookies文件路径
+        cookies_file = os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'config', 'cookies.txt'))
+        
+        # 检查cookies文件是否存在
+        if os.path.exists(cookies_file):
+            app.logger.info(f"Using cookies file: {cookies_file} (size: {os.path.getsize(cookies_file)} bytes)")
+        else:
+            app.logger.warning(f"Cookies file not found: {cookies_file}")
+        
         ydl_opts = {
             'noplaylist': True,
             'overwrites': True, # Important for retries or if filename clashes (though we try to make them unique)
@@ -365,6 +392,10 @@ def download_video_task(download_id, url, format_id, audio_only, audio_format_pr
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             },
+            # 添加cookies文件配置，解决YouTube机器人检测问题
+            'cookiesfrombrowser': None,  # 禁用浏览器cookies，强制使用cookies文件
+            'cookiefile': cookies_file,
+            'cookies': cookies_file,  # 同时使用cookies参数，以确保兼容性
             # 添加重试次数，提高下载成功率
             'retries': 10,
             # Use a more unique filename template to avoid issues with concurrent downloads or special characters.

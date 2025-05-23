@@ -4,9 +4,13 @@ WORKDIR /app
 
 # Install ffmpeg and other necessary dependencies
 RUN apt-get update && \
-    apt-get install -y ffmpeg gcc python3-dev curl && \
+    apt-get install -y ffmpeg gcc python3-dev curl wget && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# 安装最新版本的 yt-dlp 以确保更好的兼容性
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    chmod a+rx /usr/local/bin/yt-dlp
 
 # Install uv
 RUN pip install uv
