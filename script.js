@@ -204,6 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化页面语言
     updateLanguage(currentLang);
     
+    // 确保页脚内容在页面加载时显示
+    initFooter(currentLang);
+    
     // 根据当前主题更新图标
     updateThemeIcon(currentTheme);
     
@@ -268,8 +271,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.image-formats p').textContent = translations[lang].extractThumbnail;
         document.querySelector('.download-thumbnail-button').textContent = translations[lang].downloadThumbnail;
         
-        // 更新页脚 - 完全重写页脚内容
+        // 更新页脚
+        initFooter(lang);
+    }
+    // 初始化页脚内容
+    function initFooter(lang) {
         const footerContainer = document.getElementById('footer-container');
+        if (!footerContainer) return;
+        
         // 清空容器
         footerContainer.innerHTML = '';
         
@@ -288,6 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
         footerContainer.appendChild(copyrightP);
         footerContainer.appendChild(disclaimerP);
     }
+    
     // DOM Element References
     const elements = {
         videoUrlInput: document.getElementById('videoUrl'),
