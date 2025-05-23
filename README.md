@@ -79,6 +79,13 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
 ### Method 1: Running Locally
 
 1.  **Start the Flask server**:
+    
+    * **Using `uv` (recommended):**
+    ```bash
+    uv run python web_server.py
+    ```
+    
+    * **Or using Python directly (if your environment is already set up):**
     ```bash
     python web_server.py
     ```

@@ -1,67 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>yt-dlp Web UI</title>
+    <title>YouTube视频下载器 - yt-dlp Web UI</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="icon" href="https://raw.githubusercontent.com/yt-dlp/yt-dlp/master/icon.png" type="image/png">
 </head>
 <body>
-    <main class="container">
-        <h1>yt-dlp Web UI</h1>
-        <form class="input-section" onsubmit="return false;"> <!-- Prevent default form submission -->
-            <label for="videoUrl" class="sr-only">Video URL</label> <!-- Screen-reader only label -->
-            <input type="text" id="videoUrl" placeholder="Enter video URL" aria-label="Video URL">
-            <button type="button" id="fetchButton">Fetch Formats</button> <!-- type="button" to prevent form submission -->
-        </form>
-
-        <fieldset class="options-section">
-            <legend><h3>Download Options:</h3></legend>
-            <div>
-                <input type="checkbox" id="audioOnly" name="audioOnly">
-                <label for="audioOnly">Download audio only</label>
+    <div class="app-container">
+        <div class="app-header-wrapper">
+            <div class="app-logo">
+                <a href="/"><i class="fas fa-play-circle"></i> download</a>
             </div>
-            <div id="audioFormatContainer" style="display: none; margin-top: 5px; margin-left: 20px;">
-                <label for="audioFormat">Audio Format:</label>
-                <select id="audioFormat" name="audioFormat">
-                    <option value="best">Best</option>
-                    <option value="mp3">MP3</option>
-                    <option value="m4a">M4A</option>
-                    <option value="opus">Opus</option>
-                    <option value="wav">WAV</option>
-                </select>
-            </div>
-            <div style="margin-top: 10px;">
-                <label for="videoQuality">Video Quality:</label>
-                <select id="videoQuality" name="videoQuality">
-                    <option value="best">Best</option>
-                    <option value="1080">1080p</option>
-                    <option value="720">720p</option>
-                    <option value="480">480p</option>
-                    <option value="360">360p</option>
-                </select>
-            </div>
-            <div style="margin-top: 10px;">
-                <input type="checkbox" id="embedSubs" name="embedSubs">
-                <label for="embedSubs">Embed subtitles (if available, English)</label>
+            <div class="app-nav">
+                <a href="#"><i class="fas fa-question-circle"></i> 帮助中心</a>
+                <a href="#"><i class="fas fa-rss"></i> 博客</a>
+                <a href="#">中文 <i class="fas fa-chevron-down"></i></a>
+                <button id="themeToggle" class="theme-toggle"><i class="fas fa-sun"></i></button>
             </div>
         </div>
 
-        <div id="loadingIndicator" style="display: none; text-align: center; padding: 20px;">Loading...</div>
-        <article id="videoInfo" class="video-info-section" style="display: none;" aria-live="polite">
-            <h2 id="videoTitle"></h2>
-            <img id="videoThumbnail" src="" alt="Video thumbnail" style="display: none; max-width: 100%; height: auto; margin: 10px auto; border-radius: 4px;">
-            <p><strong>Uploader:</strong> <span id="videoUploader"></span></p>
-            <p><strong>Duration:</strong> <span id="videoDuration"></span></p>
-            <p><strong>Description:</strong></p>
-            <div id="videoDescription" class="video-description"></div>
-            <h3>Available Formats:</h3>
-            <ul id="formatsList" aria-label="List of available video formats">
-                <!-- Video formats will be displayed here -->
-            </ul>
-        </article>
-        <div id="downloadFeedback" style="display: none;" role="status" aria-live="polite"></div>
-    </main>
+        <div class="hero-section">
+            <div class="hero-content">
+                <div class="youtube-badge">
+                    <i class="fab fa-youtube"></i> 视频一键下载
+                </div>
+                <h1 class="hero-title">视频下载器</h1>
+                <p class="hero-subtitle">快速、安全地下载喜爱的视频</p>
+
+                <div class="url-input-card">
+                    <div class="url-input-group">
+                        <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." class="url-input">
+                        <button id="fetchButton" class="fetch-button">粘贴</button>
+                        <button id="clearButton" class="clear-button"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="convertButton" class="convert-button">提取视频链接</button>
+                    </div>
+                </div>
+                <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                    <div class="spinner"></div>
+                    <span>正在获取视频信息...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="downloadFeedback" class="feedback-card" style="display: none;">
+            <p class="feedback-message"></p>
+        </div>
+
+        <div id="videoInfo" class="video-info-card" style="display: none;">
+            <h2 class="video-info-title">视频标题: <span id="videoTitle">Video Title</span></h2>
+            
+            <div class="video-content">
+                <div class="video-thumbnail-container">
+                    <img id="videoThumbnail" class="video-thumbnail" src="" alt="Video Thumbnail">
+                    <div class="video-duration"><i class="fas fa-clock"></i> <span id="videoDuration">00:00</span></div>
+                </div>
+                
+                <div class="format-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" data-tab="video"><i class="fas fa-video"></i> 视频</button>
+                        <button class="tab-button" data-tab="audio"><i class="fas fa-music"></i> 音频</button>
+                        <button class="tab-button" data-tab="image"><i class="fas fa-image"></i> 图片</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="video-tab">
+                        <div class="format-list video-formats">
+                            <!-- 视频格式将在这里通过JavaScript生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="audio-tab">
+                        <div class="format-list audio-formats">
+                            <!-- 音频格式将在这里通过JavaScript生成 -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="image-tab">
+                        <div class="format-list image-formats">
+                            <!-- 图片格式将在这里通过JavaScript生成 -->
+                            <p>提取视频缩略图</p>
+                            <div class="thumbnail-preview">
+                                <img id="thumbnailPreview" src="" alt="Thumbnail Preview">
+                                <a href="#" class="download-thumbnail-button">下载缩略图</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p>© 2025 download - 基于 <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> 构建 | <a href="https://github.com/xiiizoux/yt-dlp-webui" target="_blank"><i class="fab fa-github"></i> GitHub</a></p>
+                <p class="disclaimer">本工具仅供个人学习和合法用途使用，请尊重版权并遵守相关法律法规</p>
+            </div>
+        </footer>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
