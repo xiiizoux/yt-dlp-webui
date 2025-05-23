@@ -123,13 +123,16 @@ def get_video_info():
             'extractor_retries': 3,  # Retry extraction
             'socket_timeout': 30,    # Increase timeout
             'nocheckcertificate': True,  # Skip HTTPS certificate validation
-            # For YouTube bot detection issues
-            # Get cookies file path from environment variable or use default
-            'cookiefile': os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'cookies.txt')) 
-                if os.path.exists(os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'cookies.txt'))) else None,
-            # Alternatively, use browser cookies if available
-            'cookiesfrombrowser': ('chrome',) 
-                if not os.path.exists(os.environ.get('COOKIES_FILE', os.path.join(os.getcwd(), 'cookies.txt'))) else None,
+            # Disable cookies file usage to avoid issues
+            'cookiefile': None,
+            'cookiesfrombrowser': None,
+            # Add more options to handle SSL issues
+            'nocheckcertificate': True,
+            'no_check_certificate': True,
+            'prefer_insecure': True,
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            },
         }
         with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
@@ -357,6 +360,11 @@ def download_video_task(download_id, url, format_id, audio_only, audio_format_pr
             'no_warnings': True,
             # 添加跳过SSL证书验证的选项，解决Twitter等网站的下载问题
             'nocheckcertificate': True,
+            'no_check_certificate': True,
+            'prefer_insecure': True,
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            },
             # 添加重试次数，提高下载成功率
             'retries': 10,
             # Use a more unique filename template to avoid issues with concurrent downloads or special characters.
