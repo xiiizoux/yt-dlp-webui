@@ -269,8 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.download-thumbnail-button').textContent = translations[lang].downloadThumbnail;
         
         // 更新页脚
-        document.getElementById('copyright').textContent = translations[lang].copyright;
-        document.getElementById('poweredBy').textContent = translations[lang].poweredBy;
+        document.getElementById('footer-copyright').innerHTML = translations[lang].footerCopyright;
         document.getElementById('disclaimer').textContent = translations[lang].disclaimer;
     }
     // DOM Element References
