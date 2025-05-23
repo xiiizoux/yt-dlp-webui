@@ -204,8 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化页面语言
     updateLanguage(currentLang);
     
-    // 确保页脚内容在页面加载时显示
-    initFooter(currentLang);
+    // 页脚已固定为中文，不需要初始化
     
     // 根据当前主题更新图标
     updateThemeIcon(currentTheme);
@@ -271,33 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.image-formats p').textContent = translations[lang].extractThumbnail;
         document.querySelector('.download-thumbnail-button').textContent = translations[lang].downloadThumbnail;
         
-        // 更新页脚
-        initFooter(lang);
-    }
-    // 初始化页脚内容
-    function initFooter(lang) {
-        const footerContainer = document.getElementById('footer-container');
-        if (!footerContainer) return;
-        
-        // 完全清空容器 - 使用更强大的清除方法
-        while (footerContainer.firstChild) {
-            footerContainer.removeChild(footerContainer.firstChild);
-        }
-        
-        // 创建版权信息元素
-        const copyrightP = document.createElement('p');
-        copyrightP.id = 'footer-copyright';
-        copyrightP.innerHTML = translations[lang].footerCopyright;
-        
-        // 创建免责声明元素
-        const disclaimerP = document.createElement('p');
-        disclaimerP.id = 'disclaimer';
-        disclaimerP.className = 'disclaimer';
-        disclaimerP.textContent = translations[lang].disclaimer;
-        
-        // 将元素添加到容器中
-        footerContainer.appendChild(copyrightP);
-        footerContainer.appendChild(disclaimerP);
+        // 页脚已固定为中文，不需要翻译
     }
     
     // DOM Element References
