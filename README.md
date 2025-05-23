@@ -39,8 +39,10 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
     ```
 
 2.  **Create and activate a virtual environment** (highly recommended):
+
+    **Option 1: Using Python's built-in `venv` module**
     ```bash
-    python -m venv venv
+    python -m venv venv 
     ```
     -   On macOS and Linux:
         ```bash
@@ -50,6 +52,24 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
         ```bash
         venv\Scripts\activate
         ```
+
+    **Option 2: Using `uv` (if installed)**
+    
+    First, ensure `uv` is installed. If not, you can install it by following the instructions at [https://github.com/astral-sh/uv](https://github.com/astral-sh/uv).
+    
+    ```bash
+    uv venv
+    ```
+    -   On macOS and Linux:
+        ```bash
+        source .venv/bin/activate
+        ```
+    -   On Windows:
+        ```bash
+        .venv\Scripts\activate
+        ```
+    
+    Choose **one** of the above methods to create and activate your virtual environment.
 
 3.  **Install dependencies**:
     ```bash
