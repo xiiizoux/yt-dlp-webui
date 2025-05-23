@@ -37,7 +37,7 @@
     --dark-color: #f8f9fa;
     --background-color: #121212;
     --card-bg-color: #1e1e1e;
-    --text-color: #e0e0e0;
+    --text-color: #ffffff;
     --border-color: #444;
     --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     --hero-gradient: linear-gradient(135deg, #4a3b78 0%, #8b4d7d 100%);
@@ -113,6 +113,34 @@ body {
     color: var(--primary-color);
 }
 
+.language-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background-color: var(--light-color);
+    border: none;
+    cursor: pointer;
+    color: var(--dark-color);
+    transition: var(--transition);
+    font-size: 0.9rem;
+    gap: 5px;
+}
+
+.language-toggle:hover {
+    background-color: #f0f0f0;
+}
+
+[data-theme="dark"] .language-toggle {
+    background-color: var(--dark-color);
+    color: var(--light-color);
+}
+
+[data-theme="dark"] .language-toggle:hover {
+    background-color: #444;
+}
+
 .theme-toggle {
     display: flex;
     align-items: center;
@@ -150,6 +178,10 @@ body {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+[data-theme="dark"] .hero-section {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
 .hero-content {
     max-width: 800px;
     margin: 0 auto;
@@ -184,9 +216,22 @@ body {
     text-shadow: 0 2px 10px rgba(106, 17, 203, 0.1);
 }
 
+[data-theme="dark"] .hero-title {
+    background: linear-gradient(to right, #a18cd1, #fbc2eb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(161, 140, 209, 0.5);
+}
+
 .hero-subtitle {
     font-size: 1.2rem;
     color: #444;
+}
+
+[data-theme="dark"] .hero-subtitle {
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     margin-bottom: var(--spacing-lg);
 }
 
@@ -205,6 +250,8 @@ body {
     display: flex;
     width: 100%;
     position: relative;
+    align-items: center;
+    gap: 10px;
 }
 
 .url-input {
@@ -214,21 +261,22 @@ body {
     border-radius: var(--radius-md);
     font-size: 1rem;
     color: var(--text-color);
-    padding-left: 40px;
     background-color: var(--card-bg-color);
     transition: border-color 0.3s ease, color 0.3s ease, background-color 0.3s ease;
-    text-indent: 10px;
 }
 
-.url-input-group::before {
-    content: '🔗';
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
+.url-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
     color: #999;
-    font-size: 16px;
+    font-size: 18px;
+    position: relative;
     z-index: 1;
+    margin-left: 5px;
+    flex-shrink: 0;
 }
 
 .fetch-button {
@@ -772,23 +820,13 @@ body {
     margin-bottom: var(--spacing-xs);
 }
 
-/* 交错纹路效果 */
+/* 交替背景色 */
 .format-button:nth-child(odd) {
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.05) 75%, transparent 75%, transparent);
-    background-size: 20px 20px;
-}
-
-.format-button:nth-child(even) {
-    background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.03) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.03) 50%, rgba(0, 0, 0, 0.03) 75%, transparent 75%, transparent);
-    background-size: 20px 20px;
+    background-color: rgba(0, 0, 0, 0.02);
 }
 
 [data-theme="dark"] .format-button:nth-child(odd) {
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.05) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.05) 75%, transparent 75%, transparent);
-}
-
-[data-theme="dark"] .format-button:nth-child(even) {
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.02) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.02) 50%, rgba(255, 255, 255, 0.02) 75%, transparent 75%, transparent);
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .format-button:hover {
@@ -1161,6 +1199,59 @@ body {
 
 .format-item .download-button:active {
     transform: translateY(1px);
+}
+
+.format-item .download-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* 下载容器样式 */
+.download-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* 下载进度条样式 */
+.download-progress-container {
+    margin-top: 8px;
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    background-color: var(--card-bg-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.download-progress-bar {
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.download-progress {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary-color), #2ecc71);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.download-progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-color);
+}
+
+[data-theme="dark"] .download-progress-bar {
+    background-color: #444;
+}
+
+[data-theme="dark"] .download-progress-container {
+    background-color: var(--card-bg-color);
 }
 
 

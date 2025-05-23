@@ -4,6 +4,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 import sys
 from pathlib import Path
+import time
+import uuid
+from threading import Thread
 
 # Try to import dotenv for environment variable support
 try:
@@ -23,6 +26,61 @@ except ImportError:
 
 # Create Flask app instance
 app = Flask(__name__) # Simplified as static files are served from root.
+
+# 存储下载进度的全局字典
+download_progress = {}
+
+# 自定义进度钩子函数
+def progress_hook(d, download_id):
+    """
+    处理下载进度的函数
+    """
+    try:
+        if download_id not in download_progress:
+            download_progress[download_id] = {
+                'status': 'waiting',
+                'progress': 0,
+                'filename': '',
+                'speed': '',
+                'eta': '',
+                'total_bytes': 0,
+                'downloaded_bytes': 0,
+                'error': None
+            }
+        
+        if d['status'] == 'downloading':
+            download_progress[download_id]['status'] = 'downloading'
+            download_progress[download_id]['filename'] = d.get('filename', '').split('/')[-1]
+            download_progress[download_id]['speed'] = d.get('_speed_str', '')
+            download_progress[download_id]['eta'] = d.get('_eta_str', '')
+            
+            # Calculate progress percentage
+            if 'total_bytes' in d and d['total_bytes'] > 0:
+                download_progress[download_id]['total_bytes'] = d['total_bytes']
+                download_progress[download_id]['downloaded_bytes'] = d['downloaded_bytes']
+                progress = (d['downloaded_bytes'] / d['total_bytes']) * 100
+                download_progress[download_id]['progress'] = round(progress, 1)
+            elif 'total_bytes_estimate' in d and d['total_bytes_estimate'] > 0:
+                download_progress[download_id]['total_bytes'] = d['total_bytes_estimate']
+                download_progress[download_id]['downloaded_bytes'] = d['downloaded_bytes']
+                progress = (d['downloaded_bytes'] / d['total_bytes_estimate']) * 100
+                download_progress[download_id]['progress'] = round(progress, 1)
+        
+        elif d['status'] == 'finished':
+            # Download finished, now post-processing
+            download_progress[download_id]['status'] = 'processing'
+            download_progress[download_id]['progress'] = 100
+            download_progress[download_id]['filename'] = d.get('filename', '').split('/')[-1]
+        
+        elif d['status'] == 'error':
+            download_progress[download_id]['status'] = 'error'
+            download_progress[download_id]['error'] = d.get('error', 'Unknown error')
+    except Exception as e:
+        app.logger.error(f"Error in progress_hook: {str(e)}")
+        # 确保即使出错也能更新进度状态
+        if download_id in download_progress:
+            download_progress[download_id]['status'] = 'error'
+            download_progress[download_id]['error'] = f"Error tracking progress: {str(e)}"
 
 # Get downloads directory from environment variable or use default
 DOWNLOADS_DIR = os.environ.get('DOWNLOADS_DIR', os.path.join(os.getcwd(), 'downloads'))
@@ -170,22 +228,107 @@ def get_video_info():
         return jsonify({'error': f"An unexpected error occurred while fetching video info."}), 500
 
 
-@app.route('/download_video', methods=['GET'])
-def download_video():
-    url = request.args.get('url')
-    format_id = request.args.get('format_id') # This is the specific format_id from the list
-    filename_on_server = None
+@app.route('/download_progress/<download_id>', methods=['GET'])
+def get_download_progress(download_id):
+    """
+    获取特定下载任务的进度
+    """
+    if download_id not in download_progress:
+        return jsonify({'error': 'Download ID not found'}), 404
+    
+    progress_data = download_progress[download_id].copy()
+    
+    # 如果下载已完成，从进度字典中移除该条目
+    if progress_data['status'] == 'completed':
+        # 保留一段时间后清理
+        pass
+    
+    # 确保所有值都是可序列化的
+    for key in list(progress_data.keys()):
+        if not isinstance(progress_data[key], (str, int, float, bool, list, dict, type(None))):
+            progress_data[key] = str(progress_data[key])
+    
+    return jsonify(progress_data)
 
-    # Get download options from query parameters
-    # Convert boolean strings to actual booleans, provide defaults
+@app.route('/start_download', methods=['GET'])
+def start_download():
+    """
+    开始下载视频并返回下载ID，用于跟踪进度
+    """
+    url = request.args.get('url')
+    format_id = request.args.get('format_id')
     audio_only_str = request.args.get('audioOnly', 'false')
     audio_only = audio_only_str.lower() == 'true'
     
-    audio_format_pref = request.args.get('audioFormat', 'best')
-    video_quality_pref = request.args.get('videoQuality', 'best') # e.g., '720', 'best'
+    if not url:
+        return jsonify({'error': 'URL is required for download.'}), 400
+    if not format_id and not audio_only:
+        return jsonify({'error': 'Format ID is required for video downloads.'}), 400
     
+    # 获取可能需要的其他参数
+    audio_format_pref = request.args.get('audioFormat', 'best')
+    video_quality_pref = request.args.get('videoQuality', 'best')
     embed_subs_str = request.args.get('embedSubs', 'false')
     embed_subs = embed_subs_str.lower() == 'true'
+    
+    # 生成唯一下载ID
+    download_id = str(uuid.uuid4())
+    
+    # 在新线程中启动下载，传递所有需要的参数
+    thread = Thread(target=download_video_task, args=(download_id, url, format_id, audio_only, audio_format_pref, video_quality_pref, embed_subs))
+    thread.daemon = True
+    thread.start()
+    
+    return jsonify({
+        'download_id': download_id,
+        'status': 'started'
+    })
+
+@app.route('/download_video/<download_id>', methods=['GET'])
+def download_completed_video(download_id):
+    """
+    下载已完成处理的视频文件
+    """
+    if download_id not in download_progress:
+        return jsonify({'error': 'Download ID not found'}), 404
+    
+    progress_data = download_progress[download_id]
+    
+    if progress_data['status'] != 'completed':
+        return jsonify({'error': 'Download not completed yet'}), 400
+    
+    filename = progress_data.get('filename_on_server')
+    if not filename or not os.path.exists(filename):
+        return jsonify({'error': 'File not found on server'}), 404
+    
+    suggested_filename = progress_data.get('suggested_filename', os.path.basename(filename))
+    mimetype = progress_data.get('mimetype', 'application/octet-stream')
+    
+    return send_from_directory(
+        directory=os.path.dirname(filename),
+        path=os.path.basename(filename),
+        as_attachment=True,
+        download_name=suggested_filename,
+        mimetype=mimetype
+    )
+
+def download_video_task(download_id, url, format_id, audio_only, audio_format_pref='best', video_quality_pref='best', embed_subs=False):
+    """
+    后台下载视频任务
+    """
+    filename_on_server = None
+    
+    # 初始化下载进度记录
+    download_progress[download_id] = {
+        'status': 'waiting',
+        'progress': 0,
+        'filename': '',
+        'speed': '',
+        'eta': '',
+        'total_bytes': 0,
+        'downloaded_bytes': 0,
+        'error': None
+    }
 
     if not url:
         app.logger.warning("Download request failed: URL is required.")
@@ -199,16 +342,28 @@ def download_video():
     try:
         if not os.path.exists(DOWNLOADS_DIR):
             os.makedirs(DOWNLOADS_DIR)
+            
+        # 不需要创建进度钩子实例，因为我们现在使用函数
 
         # --- Construct ydl_opts based on user preferences ---
+        # 定义一个内部函数，而不是使用lambda
+        def hook_wrapper(d):
+            progress_hook(d, download_id)
+            
         ydl_opts = {
             'noplaylist': True,
             'overwrites': True, # Important for retries or if filename clashes (though we try to make them unique)
             'quiet': True,
             'no_warnings': True,
+            # 添加跳过SSL证书验证的选项，解决Twitter等网站的下载问题
+            'nocheckcertificate': True,
+            # 添加重试次数，提高下载成功率
+            'retries': 10,
             # Use a more unique filename template to avoid issues with concurrent downloads or special characters.
             # %(id)s (video ID) and %(format_id)s are good for uniqueness.
             'outtmpl': os.path.join(DOWNLOADS_DIR, '%(id)s_%(format_id)s.%(ext)s'),
+            # 添加进度钩子函数
+            'progress_hooks': [hook_wrapper],
         }
         
         postprocessors = []
@@ -231,9 +386,13 @@ def download_video():
             ydl_opts['format'] = 'bestaudio/best' if audio_format_pref == 'best' else f'bestaudio[ext={audio_format_pref}]/bestaudio'
 
         else: # Video download (or video + audio)
-            # Start with the user-selected format_id if available, otherwise default to a flexible choice.
-            # The format_id from the client is generally a good specific choice.
-            selected_format = format_id if format_id else 'bestvideo+bestaudio/best'
+            # 修改：确保视频下载包含音频轨道
+            # 如果用户选择了特定格式，我们将其与最佳音频轨道合并
+            # 这样即使用户选择的格式只有视频没有音频，我们也能确保最终文件有声音
+            selected_format = f"{format_id}+bestaudio/best" if format_id else 'bestvideo+bestaudio/best'
+            
+            # 添加合并输出格式，确保音视频可以正确合并
+            ydl_opts['merge_output_format'] = 'mp4'
 
             if video_quality_pref != 'best':
                 try:
@@ -259,7 +418,10 @@ def download_video():
             ydl_opts['postprocessors'] = postprocessors
         # --- End of ydl_opts construction ---
 
-        app.logger.debug(f"Attempting download with effective yt-dlp opts: {json.dumps(ydl_opts, indent=2)}")
+        # 创建一个可序列化的选项副本用于日志记录
+        log_opts = ydl_opts.copy()
+        log_opts.pop('progress_hooks', None)  # 移除不可序列化的钩子函数
+        app.logger.debug(f"Attempting download with effective yt-dlp opts: {json.dumps(log_opts, indent=2)}")
         
         # Perform download
         with YoutubeDL(ydl_opts) as ydl:
@@ -267,10 +429,14 @@ def download_video():
                 info = ydl.extract_info(url, download=True)
             except yt_dlp.utils.DownloadError as de_inner:
                 app.logger.error(f"yt-dlp DownloadError during download for {url}: {str(de_inner)}")
-                return jsonify({'error': f"Download failed: {str(de_inner)}"}), 500
+                download_progress[download_id]['status'] = 'error'
+                download_progress[download_id]['error'] = f"Download failed: {str(de_inner)}"
+                return
             except Exception as e_inner_extract:
                 app.logger.error(f"yt-dlp generic error during download for {url}: {str(e_inner_extract)}")
-                return jsonify({'error': f"An error occurred during video processing: {str(e_inner_extract)}"}), 500
+                download_progress[download_id]['status'] = 'error'
+                download_progress[download_id]['error'] = f"An error occurred during video processing: {str(e_inner_extract)}"
+                return
 
             filename_on_server = ydl.prepare_filename(info)
             
@@ -287,7 +453,9 @@ def download_video():
 
             if not filename_on_server or not os.path.exists(filename_on_server):
                 app.logger.error(f"File not found on server after download attempt: {filename_on_server} for URL {url}")
-                return jsonify({'error': 'File not found on server after download processing.'}), 500
+                download_progress[download_id]['status'] = 'error'
+                download_progress[download_id]['error'] = 'File not found on server after download processing.'
+                return
             
             # Determine mimetype based on actual downloaded extension
             mimetype = f"audio/{downloaded_ext}" if audio_only else f"video/{downloaded_ext}"
@@ -296,15 +464,13 @@ def download_video():
             else: # Generic fallback
                 mimetype = 'application/octet-stream'
 
-
-            app.logger.info(f"Streaming file {filename_on_server} as {suggested_filename} with mimetype {mimetype}")
-            return send_from_directory(
-                directory=os.path.dirname(filename_on_server),
-                path=os.path.basename(filename_on_server),
-                as_attachment=True,
-                download_name=suggested_filename,
-                mimetype=mimetype
-            )
+            # 更新下载进度信息，标记为完成
+            download_progress[download_id]['status'] = 'completed'
+            download_progress[download_id]['filename_on_server'] = filename_on_server
+            download_progress[download_id]['suggested_filename'] = suggested_filename
+            download_progress[download_id]['mimetype'] = mimetype
+            
+            app.logger.info(f"Download completed: {filename_on_server} as {suggested_filename} with mimetype {mimetype}")
 
     except yt_dlp.utils.DownloadError as e_outer_dl: # Errors before or during ydl context
         error_message = str(e_outer_dl)
@@ -312,22 +478,21 @@ def download_video():
         
         # Check for YouTube bot detection
         if "Sign in to confirm you're not a bot" in error_message:
-            return jsonify({
-                'error': "YouTube bot detection triggered. Please create a cookies.txt file with your YouTube cookies.",
-                'details': "See https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp for instructions."
-            }), 403
+            download_progress[download_id]['status'] = 'error'
+            download_progress[download_id]['error'] = "YouTube bot detection triggered. Please create a cookies.txt file with your YouTube cookies."
+            download_progress[download_id]['details'] = "See https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp for instructions."
+            return
             
-        return jsonify({'error': f"A download error occurred: {error_message}"}), 500
+        download_progress[download_id]['status'] = 'error'
+        download_progress[download_id]['error'] = f"A download error occurred: {error_message}"
+        return
     except Exception as e_general_outer:
         app.logger.error(f"Outer general error for {url}: {str(e_general_outer)}")
-        return jsonify({'error': f"An unexpected server error occurred during download preparation."}), 500
-    finally:
-        if filename_on_server and os.path.exists(filename_on_server):
-            try:
-                os.remove(filename_on_server)
-                app.logger.info(f"Successfully deleted temporary file: {filename_on_server}")
-            except OSError as e_remove:
-                app.logger.error(f"Error deleting temporary file {filename_on_server}: {str(e_remove)}")
+        download_progress[download_id]['status'] = 'error'
+        download_progress[download_id]['error'] = f"An unexpected server error occurred during download preparation: {str(e_general_outer)}"
+        return
+    # 不在下载后立即删除文件，而是等待用户下载完成
+    # 可以添加一个定时任务来清理过期的文件
 
 if __name__ == '__main__':
     # Get port from environment variable or use default 5001 (to avoid conflicts with AirPlay on macOS)

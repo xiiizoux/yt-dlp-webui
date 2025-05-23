@@ -17,7 +17,7 @@
             <div class="app-nav">
                 <a href="#"><i class="fas fa-question-circle"></i> 帮助中心</a>
                 <a href="#"><i class="fas fa-rss"></i> 博客</a>
-                <a href="#">中文 <i class="fas fa-chevron-down"></i></a>
+                <button id="languageToggle" class="language-toggle"><span id="currentLanguage">中文</span> <i class="fas fa-language"></i></button>
                 <button id="themeToggle" class="theme-toggle"><i class="fas fa-sun"></i></button>
             </div>
         </div>
@@ -32,6 +32,7 @@
 
                 <div class="url-input-card">
                     <div class="url-input-group">
+                        <div class="url-icon"><i class="fas fa-link"></i></div>
                         <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." class="url-input">
                         <button id="fetchButton" class="fetch-button">粘贴</button>
                         <button id="clearButton" class="clear-button"><i class="fas fa-times"></i></button>
@@ -101,6 +102,7 @@
         </footer>
     </div>
 
+    <script src="translations.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
