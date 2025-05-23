@@ -67,9 +67,9 @@ This web UI is a wrapper around the versatile `yt-dlp` tool. All video fetching 
     Dependencies are defined in `pyproject.toml` and locked in `uv.lock`.
     With your virtual environment activated, install them using `uv`:
     ```bash
-    uv pip sync --locked pyproject.toml
+    uv pip sync pyproject.toml
     ```
-    This command installs the exact versions specified in `uv.lock`, ensuring a reproducible environment by synchronizing your environment with the `pyproject.toml` file using the locked dependencies.
+    This command installs the exact versions specified in `uv.lock` by synchronizing your environment with the `pyproject.toml` file, automatically using the associated lock file.
 
 ## Running the Application
 
