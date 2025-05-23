@@ -17,6 +17,5 @@ downloads/
 .uv/
 .venv.uv/
 .cache/
-downloads/
 *.log*
 .DS_Store
