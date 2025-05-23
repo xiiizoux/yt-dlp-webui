@@ -9,9 +9,14 @@ services:
       - "${PORT:-5001}:5001"
     volumes:
       - ${DOWNLOADS_DIR:-./downloads}:/app/downloads
+      # Make cookies.txt optional - it will use the one created in the container if not provided
       - ${COOKIES_FILE:-./cookies.txt}:/app/cookies.txt:ro
     environment:
       - TZ=${TIMEZONE:-Asia/Shanghai}
+      - PORT=5001
+      - DEBUG=True
+      - DOWNLOADS_DIR=/app/downloads
+      - COOKIES_FILE=/app/cookies.txt
     networks:
       - yt-dlp-network
 
