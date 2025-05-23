@@ -269,9 +269,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.download-thumbnail-button').textContent = translations[lang].downloadThumbnail;
         
         // 更新页脚
-        const footerText = document.querySelector('.footer-content p:first-child');
-        footerText.innerHTML = footerText.innerHTML.replace(/^.*?\s-\s/, `${translations[lang].copyright} `);
-        document.querySelector('.disclaimer').textContent = translations[lang].disclaimer;
+        document.getElementById('copyright').textContent = translations[lang].copyright;
+        document.getElementById('poweredBy').textContent = translations[lang].poweredBy;
+        document.getElementById('disclaimer').textContent = translations[lang].disclaimer;
     }
     // DOM Element References
     const elements = {

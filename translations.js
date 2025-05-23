@@ -50,6 +50,7 @@ const translations = {
     
     // 页脚
     'copyright': '© 2025 download - 基于',
+    'poweredBy': '构建',
     'disclaimer': '本工具仅供个人学习和合法用途使用，请尊重版权并遵守相关法律法规'
   },
   'en': {
@@ -102,6 +103,7 @@ const translations = {
     
     // Footer
     'copyright': '© 2025 download - Powered by',
+    'poweredBy': 'built with',
     'disclaimer': 'This tool is for personal learning and legal purposes only. Please respect copyright and comply with relevant laws and regulations.'
   }
 };
