@@ -49,7 +49,7 @@ const translations = {
     'error': '错误',
     
     // 页脚
-    'footerCopyright': '© 2025 download - 基于 <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> 构建 | <a href="https://github.com/xiiizoux/yt-dlp-webui" target="_blank"><i class="fab fa-github"></i> GitHub</a>',
+    'footerCopyright': '© 2025 VideoDownload - 基于 <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> 构建 | <a href="https://github.com/xiiizoux/yt-dlp-webui" target="_blank"><i class="fab fa-github"></i> GitHub</a>',
     'disclaimer': '本工具仅供个人学习和合法用途使用，请尊重版权并遵守相关法律法规'
   },
   'en': {
@@ -101,7 +101,7 @@ const translations = {
     'error': 'Error',
     
     // Footer
-    'footerCopyright': '© 2025 download - Powered by <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> | <a href="https://github.com/xiiizoux/yt-dlp-webui" target="_blank"><i class="fab fa-github"></i> GitHub</a>',
+    'footerCopyright': '© 2025 VideoDownload - Powered by <a href="https://github.com/yt-dlp/yt-dlp" target="_blank">yt-dlp</a> | <a href="https://github.com/xiiizoux/yt-dlp-webui" target="_blank"><i class="fab fa-github"></i> GitHub</a>',
     'disclaimer': 'This tool is for personal learning and legal purposes only. Please respect copyright and comply with relevant laws and regulations.'
   }
 };
