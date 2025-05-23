@@ -279,8 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const footerContainer = document.getElementById('footer-container');
         if (!footerContainer) return;
         
-        // 清空容器
-        footerContainer.innerHTML = '';
+        // 完全清空容器 - 使用更强大的清除方法
+        while (footerContainer.firstChild) {
+            footerContainer.removeChild(footerContainer.firstChild);
+        }
         
         // 创建版权信息元素
         const copyrightP = document.createElement('p');
