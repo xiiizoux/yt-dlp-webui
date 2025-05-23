@@ -9,6 +9,11 @@ __pycache__
 env/
 venv/
 .venv/
+
+# 排除个人 cookies 文件，避免构建到镜像中
+cookies.txt
+# 排除下载目录
+downloads/
 .uv/
 .venv.uv/
 .cache/

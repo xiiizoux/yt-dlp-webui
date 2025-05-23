@@ -9,9 +9,14 @@ services:
       - "${PORT:-5001}:5001"
     volumes:
       - ${DOWNLOADS_DIR:-./downloads}:/app/downloads
-      - ${COOKIES_FILE:-./cookies.txt}:/app/cookies.txt:ro
+      # Mount cookies.txt with read-write permissions
+      - ${COOKIES_FILE:-./cookies.txt}:/app/config/cookies.txt:rw
     environment:
       - TZ=${TIMEZONE:-Asia/Shanghai}
+      - PORT=5001
+      - DEBUG=True
+      - DOWNLOADS_DIR=/app/downloads
+      - COOKIES_FILE=/app/config/cookies.txt
     networks:
       - yt-dlp-network
 
