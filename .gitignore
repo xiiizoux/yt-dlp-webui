@@ -7,3 +7,12 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Environment Variables
+.env
+
+# Log files
+*.log
+
+# Downloaded files
+/downloads/

@@ -98,7 +98,19 @@ This project includes Docker support for easy deployment and isolation.
 
 #### Configuration
 
-The application can be configured using environment variables in the `.env` file:
+The application can be configured using environment variables. A template file `.env_example` is provided. To use it:
+
+1. Copy `.env_example` to `.env`:
+   ```bash
+   cp .env_example .env
+   ```
+
+2. Edit the `.env` file to customize your settings:
+   ```bash
+   nano .env  # or use any text editor
+   ```
+
+Available configuration options:
 
 ```
 # Port configuration
